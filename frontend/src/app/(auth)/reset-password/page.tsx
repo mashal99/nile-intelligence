@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -8,7 +8,7 @@ import api from '@/lib/api'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const params = useSearchParams()
   const token = params.get('token')
   const [sent, setSent] = useState(false)
@@ -76,5 +76,13 @@ export default function ResetPasswordPage() {
         <Link href="/login" className="text-brand-600 hover:underline">Back to login</Link>
       </p>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-gray-500 text-sm">Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }

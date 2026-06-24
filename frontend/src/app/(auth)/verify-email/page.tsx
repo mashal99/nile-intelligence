@@ -1,11 +1,11 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import api from '@/lib/api'
 import Button from '@/components/ui/Button'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const params = useSearchParams()
   const token = params.get('token')
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -45,5 +45,13 @@ export default function VerifyEmailPage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-gray-500 text-sm">Verifying...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }
