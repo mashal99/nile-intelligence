@@ -1,0 +1,56 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: []
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: me-south-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f docker/backend.Dockerfile -t $ECR_REGISTRY/nile-backend:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/nile-backend:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/nile-backend:$IMAGE_TAG $ECR_REGISTRY/nile-backend:latest
+          docker push $ECR_REGISTRY/nile-backend:latest
+
+      - name: Build and push frontend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f docker/frontend.Dockerfile -t $ECR_REGISTRY/nile-frontend:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/nile-frontend:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/nile-frontend:$IMAGE_TAG $ECR_REGISTRY/nile-frontend:latest
+          docker push $ECR_REGISTRY/nile-frontend:latest
+
+      - name: Deploy to ECS
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          aws ecs update-service --cluster nile-intelligence --service nile-backend --force-new-deployment
+          aws ecs update-service --cluster nile-intelligence --service nile-frontend --force-new-deployment
+          echo "Deployment triggered. Monitor at AWS ECS Console."

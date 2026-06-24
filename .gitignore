@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+.venv
+venv/
+env/
+
+# Django
+backend/staticfiles/
+backend/media/
+backend/*.sqlite3
+
+# Node
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Scrapy
+backend/scrapers/.scrapy/
+
+# Secrets
+*.pem
+*.key
+secrets/
